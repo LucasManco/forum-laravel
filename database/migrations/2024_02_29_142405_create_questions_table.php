@@ -13,8 +13,12 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('author_id');
+            $table->foreign('author_id')->references('id')
+                ->on('users')->onDelete('cascade');
             $table->string('title');
-            $table->string('isbn');
+            $table->string('content');
+            $table->string('slug');
             
             $table->timestamps();
         });

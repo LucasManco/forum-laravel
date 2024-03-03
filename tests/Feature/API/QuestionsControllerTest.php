@@ -28,18 +28,22 @@ class QuestionsControllerTest extends TestCase
 
             $assertableJson->whereAllType([
                 '0.id' => 'integer',
+                '0.author_id' => 'integer',
                 '0.title' => 'string',
-                '0.isbn' => 'string',
+                '0.content' => 'string',
+                '0.slug' => 'string',
             ]);
 
-            $assertableJson->hasAll(['0.id', '0.title', '0.isbn']);
+            $assertableJson->hasAll(['0.id','0.author_id', '0.title', '0.content', '0.slug']);
 
             $question = $questions->first();
 
             $assertableJson->whereAll([
                 '0.id' => $question->id,
+                '0.author_id' => $question->author_id,
                 '0.title' => $question->title,
-                '0.isbn' => $question->isbn
+                '0.content' => $question->content,
+                '0.slug' => $question->slug
             ]);
         });
     }
@@ -55,16 +59,20 @@ class QuestionsControllerTest extends TestCase
         $response->assertJson(function (AssertableJson $assertableJson) use ($question) {
             $assertableJson->whereAllType([
                 'id' => 'integer',
+                'author_id' => 'integer',
                 'title' => 'string',
-                'isbn' => 'string',
+                'content' => 'string',
+                'slug' => 'string',
             ]);
 
-            $assertableJson->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+            $assertableJson->hasAll(['id', 'author_id', 'title', 'content', 'slug', 'created_at', 'updated_at']);
 
             $assertableJson->whereAll([
                 'id' => $question->id,
+                'author_id' => $question->author_id,
                 'title' => $question->title,
-                'isbn' => $question->isbn
+                'content' => $question->content,
+                'slug' => $question->slug
             ]);
         });
     }
@@ -79,11 +87,12 @@ class QuestionsControllerTest extends TestCase
 
         $response->assertJson(function (AssertableJson $assertableJson) use ($question) {
 
-            $assertableJson->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+            $assertableJson->hasAll(['id', 'author_id', 'title', 'slug','content', 'created_at', 'updated_at']);
 
             $assertableJson->whereAll([
                 'title' => $question['title'],
-                'isbn' => $question['isbn']
+                'content' => $question['content'],
+                'slug' => $question['slug']
             ])->etc();
         });
     }
@@ -99,7 +108,7 @@ class QuestionsControllerTest extends TestCase
             $assertableJson->hasAll(['message', 'errors']);
 
             $assertableJson->where('errors.title.0', 'Este campo é obrigatório!')
-                            ->where('errors.isbn.0', 'Este campo é obrigatório!');
+                            ->where('errors.content.0', 'Este campo é obrigatório!');
         });
     }
 
@@ -109,7 +118,7 @@ class QuestionsControllerTest extends TestCase
 
         $question = [
             'title' => 'Atualizando Pergunta...',
-            'isbn' => '1234567890'
+            'content' => '1234567890'
         ];
 
         $response = $this->putJson('/api/questions/' . $questionDb->id, $question);
@@ -117,10 +126,10 @@ class QuestionsControllerTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertJson(function (AssertableJson $assertableJson) use ($question) {
-            $assertableJson->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+            $assertableJson->hasAll(['id', 'title', 'content', 'created_at', 'updated_at']);
             $assertableJson->whereAll([
                 'title' => $question['title'],
-                'isbn' => $question['isbn']
+                'content' => $question['content']
             ])->etc();
         });
     }
@@ -138,7 +147,7 @@ class QuestionsControllerTest extends TestCase
         $response->assertStatus(200);
 
         $response->assertJson(function (AssertableJson $assertableJson) use ($question) {
-            $assertableJson->hasAll(['id', 'title', 'isbn', 'created_at', 'updated_at']);
+            $assertableJson->hasAll(['id', 'title', 'content', 'author_id', 'slug', 'created_at', 'updated_at']);
             $assertableJson->where('title', $question['title']);
         });
     }

@@ -9,5 +9,5 @@ class Question extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'isbn'];
+    protected $fillable = ['title', 'author_id','content','slug'];
 }

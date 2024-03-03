@@ -14,7 +14,13 @@ return new class extends Migration
         Schema::create('answers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('isbn');
+            $table->unsignedBigInteger('author_id');
+            $table->foreign('author_id')->references('id')
+                ->on('users')->onDelete('cascade');
+                $table->unsignedBigInteger('question_id');
+            $table->foreign('question_id')->references('id')
+                ->on('questions')->onDelete('cascade');
+            $table->string('content');
             
             $table->timestamps();
         });
