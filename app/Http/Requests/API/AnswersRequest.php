@@ -32,9 +32,9 @@ class AnswersRequest extends FormRequest
     {
         return $this->route('answer')?[]:
         [
-            'question_id' => 'required',
-            'content' => 'required',
-            'attachment' => ''
+            'question_id' => ['required','exists:questions,id'],
+            'content' => ['required','string'],
+            'attachment' => 'file'
         ];
     }
 

@@ -31,10 +31,10 @@ class QuestionsRequest extends FormRequest
     {
         return $this->route('question')?[]:
         [
-            'title' => 'required',
-            'content' => 'required',
-            'slug' => 'required',
-            'attachment' => ''
+            'title' => ['required','string'],
+            'content' => ['required','string'],
+            'slug' => ['required','string'],
+            'attachment' => 'file'
         ];
     }
 
