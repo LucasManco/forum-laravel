@@ -24,9 +24,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('signin',[\App\Http\Controllers\API\UsersController::class,'signin']);
 Route::post('login',[\App\Http\Controllers\API\UsersController::class,'login']);
-Route::apiResource('questions', \App\Http\Controllers\API\QuestionsController::class );
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [\App\Http\Controllers\API\UsersController::class, 'logout']);    
-    //Route::apiResource('answers', \App\Http\Controllers\API\AnswersController::class );
+    Route::apiResource('questions', \App\Http\Controllers\API\QuestionsController::class );
+    Route::apiResource('answers', \App\Http\Controllers\API\AnswersController::class );
+        
 });

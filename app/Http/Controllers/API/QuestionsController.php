@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use \App\Models\QuestionAttachment;
 
 class QuestionsController extends Controller
 {
@@ -22,11 +24,24 @@ class QuestionsController extends Controller
 
     public function store(\App\Http\Requests\API\QuestionsRequest $request)
     {
-        $question = $this->question->create($request->validated());
+        $data = $request->validated();
+        $data['author_id'] = Auth::id();
+        
+        $file = $request->file('attachment');
+        $question = $this->question->create($data);
+        if($file){
+            $file->store('attachment');
+        
+            QuestionAttachment::create([
+                'question_id' => $question->id,
+                'content' => $file
+            ]);
+        }
+
         return response()->json($question, 201);
     }
 
-    public function update($id, Request $request)
+    public function update($id, \App\Http\Requests\API\QuestionsRequest $request)
     {
         $question = $this->question->findOrFail($id);
         $question->update($request->all());

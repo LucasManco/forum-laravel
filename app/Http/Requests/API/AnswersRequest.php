@@ -3,21 +3,22 @@
 namespace App\Http\Requests\API;
 
 use Illuminate\Foundation\Http\FormRequest;
-use App\Models\Question;
+use App\Models\Answer;
 use Illuminate\Support\Facades\Auth;
 
-class QuestionsRequest extends FormRequest
+class AnswersRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        $question_id = $this->route('question');
-        if($question_id){
-            $question = Question::find($question_id);
-            // dd($question->author_id. ' ' . Auth::id());
-            return $question->author_id == Auth::id() ;
+        $answer_id = $this->route('answer');
+        if($answer_id){
+            $answer = Answer::find($answer_id);
+            if($answer){
+                return $answer->author_id == Auth::id() ;
+            }
         }
         return true;
     }
@@ -29,11 +30,10 @@ class QuestionsRequest extends FormRequest
      */
     public function rules(): array
     {
-        return $this->route('question')?[]:
+        return $this->route('answer')?[]:
         [
-            'title' => 'required',
+            'question_id' => 'required',
             'content' => 'required',
-            'slug' => 'required',
             'attachment' => ''
         ];
     }

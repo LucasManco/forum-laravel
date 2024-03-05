@@ -5,8 +5,12 @@ namespace Tests\Feature\API;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use App\Models\User;
 use App\Models\Question;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class QuestionsControllerTest extends TestCase
 {
@@ -14,11 +18,27 @@ class QuestionsControllerTest extends TestCase
     /**
      * A basic feature test example.
      */
+    private function make_login(){
+        $password = 'password';
+        $user = User::factory(1)->createOne([
+            'password_hash' => Hash::make($password),
+        ]);
+
+        // dd($user);
+
+        $responseLogin = $this->post('/api/login', [
+            'email' => $user->email,
+            'password' => $password,
+        ]);
+        return $responseLogin->json('token')['plainTextToken'];
+    }
     public function test_get_questions_endpoint(): void
     {
+        $token = $this->make_login();
         $questions = Question::factory(3)->create();
 
-        $response = $this->getJson('/api/questions');
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->getJson('/api/questions');
 
         $response->assertStatus(200);
 
@@ -50,9 +70,11 @@ class QuestionsControllerTest extends TestCase
 
     public function test_show_questions_endpoint(): void
     {
+        $token = $this->make_login();
         $question = Question::factory(1)->createOne();
 
-        $response = $this->getJson('/api/questions/' . $question->id);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->getJson('/api/questions/' . $question->id);
 
         $response->assertStatus(200);
 
@@ -79,9 +101,18 @@ class QuestionsControllerTest extends TestCase
 
     public function test_post_questions_endpoint(): void
     {
+        $token = $this->make_login();
+
         $question = Question::factory(1)->makeOne()->toArray();
 
-        $response = $this->postJson('/api/questions', $question);
+        Storage::fake('attachment');
+ 
+        $file = UploadedFile::fake()->image('attachment.jpg');
+ 
+        $question['attachment'] = $file;
+             
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->postJson('/api/questions', $question);
 
         $response->assertStatus(201);
 
@@ -99,7 +130,10 @@ class QuestionsControllerTest extends TestCase
 
     public function test_post_questions_should_validate_when_try_create_a_valid_question(): void
     {
-        $response = $this->postJson('/api/questions', []);
+        $token = $this->make_login();
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->postJson('/api/questions', []);
 
         $response->assertStatus(422);
 
@@ -114,14 +148,16 @@ class QuestionsControllerTest extends TestCase
 
     public function test_put_questions_endpoint(): void
     {
+        $token = $this->make_login();
         $questionDb = Question::factory(1)->createOne();
-
+        
         $question = [
             'title' => 'Atualizando Pergunta...',
             'content' => '1234567890'
         ];
 
-        $response = $this->putJson('/api/questions/' . $questionDb->id, $question);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->putJson('/api/questions/' . $questionDb->id, $question);
 
         $response->assertStatus(200);
 
@@ -136,13 +172,15 @@ class QuestionsControllerTest extends TestCase
 
     public function test_patch_questions_endpoint(): void
     {
+        $token = $this->make_login();
         $questionDb = Question::factory(1)->createOne();
 
         $question = [
             'title' => 'Atualizando Pergunta Patch...'
         ];
 
-        $response = $this->patchJson('/api/questions/' . $questionDb->id, $question);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->patchJson('/api/questions/' . $questionDb->id, $question);
 
         $response->assertStatus(200);
 
@@ -152,12 +190,32 @@ class QuestionsControllerTest extends TestCase
         });
     }
 
+    public function test_only_author_may_update_question():  void{
+        User::factory(1)->createOne(); //cria um usuário
+        $questionDb = Question::factory(1)->createOne(); //cria a pergunta para o usuário 1
+        $token = $this->make_login(); //loga no usuário 2
+
+        $question = [
+            'title' => 'Atualizando Pergunta Patch...'
+        ];
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->patchJson('/api/questions/' . $questionDb->id, $question);
+
+        $response->assertStatus(403);
+    }
+
     public function test_delete_questions_endpoint(): void
     {
+        $token = $this->make_login();
+
         $questionDb = Question::factory(1)->createOne();
 
-        $response = $this->deleteJson('/api/questions/' . $questionDb->id);
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                            ->deleteJson('/api/questions/' . $questionDb->id);
 
         $response->assertStatus(204);
     }
+
+    
 }
