@@ -8,6 +8,12 @@ Para executar o projeto primeiramente deve-se copiar o arquivo .env.example para
 cp .env.example .env
 ```
 
+Depois disso devemos instalar as dependencias com o composer através do seguinte comando:
+
+```
+docker run --rm --interactive --tty   --volume $PWD:/app   composer install
+```
+
 Em seguida deve-se inicializar o laravel sail para que os containers sejam montados. Isso é possivel através do seguinte código:
 
 ```
