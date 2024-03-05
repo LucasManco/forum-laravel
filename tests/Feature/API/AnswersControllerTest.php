@@ -3,13 +3,11 @@
 namespace Tests\Feature\API;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Answer;
 use App\Models\AnswerAttachment;
 use App\Models\User;
 use Illuminate\Testing\Fluent\AssertableJson;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,35 +18,7 @@ class AnswersControllerTest extends TestCase
      * A basic feature test example.
      */
 
-    private function make_login()
-    {
-        $password = 'password';
-        $user = User::factory(1)->createOne([
-            'password_hash' => Hash::make($password),
-        ]);
 
-        // dd($user);
-
-        $responseLogin = $this->post('/api/login', [
-            'email' => $user->email,
-            'password' => $password,
-        ]);
-
-        $responseLogin->assertStatus(200);
-        // $responseLogin->
-        // dd($responseLogin->json());
-        $responseLogin->assertJson(function (AssertableJson $assertableJson) use ($user) {
-
-            $assertableJson->hasAll(['token']);
-
-            $assertableJson->where(
-                'token.accessToken.name',
-                'JWT'
-            );
-        });
-
-        return $responseLogin->json('token')['plainTextToken'];
-    }
     public function test_get_answers_endpoint(): void
     {
         $token = $this->make_login();
@@ -121,13 +91,13 @@ class AnswersControllerTest extends TestCase
         $token = $this->make_login();
 
         $answer = Answer::factory(1)->makeOne()->toArray();
-        
+
         Storage::fake('attachment');
- 
+
         $file = UploadedFile::fake()->image('attachment.jpg');
- 
+
         $answer['attachment'] = $file;
-        
+
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/answers', $answer);
 
@@ -207,7 +177,8 @@ class AnswersControllerTest extends TestCase
         });
     }
 
-    public function test_only_author_may_update_answer():  void{
+    public function test_only_author_may_update_answer(): void
+    {
         User::factory(1)->createOne(); //cria um usuário
         $questionDb = Answer::factory(1)->createOne(); //cria a pergunta para o usuário 1
         $token = $this->make_login(); //loga no usuário 2
@@ -217,7 +188,7 @@ class AnswersControllerTest extends TestCase
         ];
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-                            ->patchJson('/api/answers/' . $questionDb->id, $question);
+            ->patchJson('/api/answers/' . $questionDb->id, $question);
 
         $response->assertStatus(403);
     }

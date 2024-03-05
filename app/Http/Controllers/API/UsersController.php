@@ -14,15 +14,6 @@ class UsersController extends Controller
     public function __construct(private \App\Models\User $user)
     {
     }
-    // public function index()
-    // {
-    //     return response()->json($this->user->all());
-    // }
-
-    // public function show($id)
-    // {
-    //     return response()->json($this->user->findOrFail($id));
-    // }
 
     public function signin(\App\Http\Requests\API\UsersRequest $request)
     {
@@ -34,7 +25,6 @@ class UsersController extends Controller
 
     public function login(Request $request)
     {
-        // dd($request->all());
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
@@ -54,18 +44,4 @@ class UsersController extends Controller
         }
         return response()->json('Erro ao Processar a Informação', 401);
     }
-
-
-    // public function update($id, Request $request)
-    // {
-    //     $user = $this->user->findOrFail($id);
-    //     $user->update($request->all());
-    //     return response()->json($user);
-    // }
-
-    // public function destroy($id)
-    // {
-    //     $user = $this->user->findOrFail($id);
-    //     return response()->json($user->delete(), 204);
-    // }
 }

@@ -17,7 +17,6 @@ class AnswersController extends Controller
         $answers = $this->answer->all();
         foreach($answers as $answer){
             $answer->attachment = $answer->getAttachments()->get();
-            // die($answer);
         }
         
         return response()->json($answers);
